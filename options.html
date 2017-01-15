@@ -1,0 +1,18 @@
+<html>
+	<head>
+		<title>Options page</title>
+		<script src="options.js"></script>
+	</head>
+	<body onload="loadOptions()">
+		<h3>Options page</h3>
+
+		<form id="options_form">
+			<p>How many try do to find button code at page</p>
+			<input type="textbox" id="cycleCount" value="10" placeholder="10"/><br/>
+
+			<button onclick="saveOptions()">Save</button>
+			<br />
+			<button onclick="eraseOptions()">Restore default</button>
+		</form>
+	</body>
+</html>

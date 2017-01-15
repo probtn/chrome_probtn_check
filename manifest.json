@@ -9,6 +9,7 @@
     "default_popup": "popup.html"
   },
   "devtools_page": "devtools.html",
+  "options_page": "options.html",
   "background": { "scripts": ["background.js"] },
   "permissions": [
     "http://*/*",

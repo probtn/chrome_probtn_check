@@ -1,6 +1,9 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+var startButton = document.getElementById("start");
+var stopButton = document.getElementById("stop");
+var messageContainer = document.getElementById("messages");
+var status_code = document.getElementById("status_code");
+var status_button = document.getElementById("status_button");
+var clearButton = document.getElementById("clear");
 
 /**
  * Get the current URL.
@@ -47,65 +50,97 @@ function getCurrentTabUrl(callback) {
   // alert(url); // Shows "undefined", because chrome.tabs.query is async.
 }
 
-/**
- * @param {string} searchTerm - Search term for Google Image search.
- * @param {function(string,number,number)} callback - Called when an image has
- *   been found. The callback gets the URL, width and height of the image.
- * @param {function(string)} errorCallback - Called when the image is not found.
- *   The callback gets a string that describes the failure reason.
- */
-function getImageUrl(searchTerm, callback, errorCallback) {
-  // Google image search - 100 searches per day.
-  // https://developers.google.com/image-search/
-  var searchUrl = 'https://ajax.googleapis.com/ajax/services/search/images' +
-    '?v=1.0&q=' + encodeURIComponent(searchTerm);
-  var x = new XMLHttpRequest();
-  x.open('GET', searchUrl);
-  // The Google image search API responds with JSON, so let Chrome parse it.
-  x.responseType = 'json';
-  x.onload = function() {
-    // Parse and process the response from Google Image Search.
-    var response = x.response;
-    if (!response || !response.responseData || !response.responseData.results ||
-        response.responseData.results.length === 0) {
-      errorCallback('No response from Google Image search!');
-      return;
-    }
-    var firstResult = response.responseData.results[0];
-    // Take the thumbnail instead of the full image to get an approximately
-    // consistent image size.
-    var imageUrl = firstResult.tbUrl;
-    var width = parseInt(firstResult.tbWidth);
-    var height = parseInt(firstResult.tbHeight);
-    console.assert(
-        typeof imageUrl == 'string' && !isNaN(width) && !isNaN(height),
-        'Unexpected respose from the Google Image Search API!');
-    callback(imageUrl, width, height);
-  };
-  x.onerror = function() {
-    errorCallback('Network error.');
-  };
-  x.send();
+function renderPage(pageText) {
+  document.getElementById('page').textContent = pageText;
 }
 
-function renderStatus(statusText) {
-  document.getElementById('status').textContent = statusText;
+function renderStatus(statusText, code) {
+  status_code = document.getElementById("status_code");
+  status_button = document.getElementById("status_button");
+
+  if (code===1) {
+    status_code.textContent = statusText;
+  }
+  if (code===2) {
+    status_button.textContent = statusText;
+  }
+  
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  getCurrentTabUrl(function(url) {
+  chrome.browserAction.setIcon({ path: "icon.png" });
+  startButton = document.getElementById("start");
+  stopButton = document.getElementById("stop");
+  messageContainer = document.getElementById("messages");
+  status_code = document.getElementById("status_code");
+  status_button = document.getElementById("status_button");
+  clearButton = document.getElementById("clear");
 
-    renderStatus(url);
-    //console.log("chrome", chrome, chrome.devtools);
-    /*chrome.devtools.network.onRequestFinished.addListener(
-          function(request) {
-            //if (request.response.bodySize > 40*1024) {
-              chrome.devtools.inspectedWindow.eval(
-                  'console.log("Large image: " + unescape("' +
-                  escape(request.request.url) + '"))');
-              console.log("request", request);
-            //}
-          renderStatus(request.request.url);
-    });*/
+  getCurrentTabUrl(function(url) {
+    renderPage(url);
+  });
+
+  startButton.addEventListener("click", function (e) {
+    chrome.browserAction.setIcon({ path: "images/icon_enabled.png" });
+    console.log("start clicked");
+    sendMessage({message:"start"});
+  });
+
+  stopButton.addEventListener("click", function (e) {
+    chrome.browserAction.setIcon({ path: "icon.png" });
+    console.log("stop clicked");
+    sendMessage({message:"stop"});
+  });
+
+  clearButton.addEventListener("click", function (e) {
+    messageContainer.innerHTML = '';
+    status_code.innerHTML = '';
+    status_button.innerHTML = '';
+    console.log("clear clicked");
+    sendMessage({message:"stop"});
   });
 });
+
+var addToMessagesList = function(message) {
+  var item = document.createElement('p');
+
+  var currentdate = new Date();
+  var datetime = currentdate.getHours() + ":" 
+  + currentdate.getMinutes() + ":" + currentdate.getSeconds();
+
+  item.innerHTML = "<span><i>"+datetime+"</i></span> " +message;
+  if ((messageContainer===null) || (messageContainer===undefined)) {
+    document.getElementById("messages");
+  }
+  try {
+    messageContainer.appendChild(item);
+  } catch(ex) {
+    console.log(ex);
+  }  
+}
+
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log(sender.tab ?
+                "from a content script:" + sender.tab.url :
+                "from the extension");
+    console.log("request", request);
+    addToMessagesList(request.message);
+
+    //if buttno find at current page
+    if (request.find === true) {
+      chrome.browserAction.setIcon({ path: "images/icon_found.png" });
+      renderStatus("button found", request.code);
+    }
+});
+
+//send message to current tab
+var sendMessage = function(message) {
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    chrome.tabs.sendMessage(tabs[0].id, {message}, function(response) {
+      console.log(response);
+      //addToMessagesList(response);
+    });
+  });
+}
+

@@ -7,7 +7,12 @@
 <html>
   <head>
     <title>Probtn exist checker</title>
+    <link href="css/bootstrap.css" rel="stylesheet" />
     <style>
+      html, body {
+        width: 400px;
+        height: 400px;
+      }
       body {
         font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
         font-size: 100%;
@@ -19,8 +24,16 @@
         overflow: hidden;
         max-width: 400px;
       }
-    </style>
+      #messages {
+        overflow: scroll;
+        width:390px;
+        height: 300px;
+      }
 
+      #status_code, #status_button {
+        font-weight: bold;
+      }
+    </style>
     <!--
       - JavaScript and HTML must be in separate files: see our Content Security
       - Policy documentation[1] for details and explanation.
@@ -30,8 +43,38 @@
     <script src="popup.js"></script>
   </head>
   <body>
-    <div id="status"></div>
-    <img id="image-result" hidden>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <p>Page - <span id="page"></span></p>
+        </div>
+        <div class="col-md-12">
+          <p>Status:<br/>
+          Button code - <span id="status_code"></span><br/>
+          Button - <span id="status_button"></span>
+          </p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="messages"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-3 col-xs-3">
+          <button id="start">Start</button>
+        </div>
+        <div class="col-md-3 col-xs-3">
+          <button id="stop">Stop</button>
+        </div>
+        <div class="col-md-3 col-xs-3">
+          <button id="pause">Pause</button>
+        </div>  
+        <div class="col-md-3 col-xs-3">
+          <button id="clear">Clear</button>
+        </div>     
+      </div>
+    </div>
   </body>
 </html>
 
