@@ -5,6 +5,17 @@ var status_code = document.getElementById("status_code");
 var status_button = document.getElementById("status_button");
 var clearButton = document.getElementById("clear");
 
+var isFound = false;
+
+var currentCount = 0;
+
+var port = chrome.extension.connect({
+      name: "Background Communication"
+});
+port.onMessage.addListener(function(msg) {
+      console.log("message recieved", msg);
+});
+
 /**
  * Get the current URL.
  *
@@ -37,6 +48,8 @@ function getCurrentTabUrl(callback) {
     // "url" properties.
     console.assert(typeof url == 'string', 'tab.url should be a string');
 
+    port.postMessage({currentTab: url, tab: tab});
+
     callback(url);
   });
 
@@ -63,8 +76,7 @@ function renderStatus(statusText, code) {
   }
   if (code===2) {
     status_button.textContent = statusText;
-  }
-  
+  }  
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -81,9 +93,12 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   startButton.addEventListener("click", function (e) {
-    chrome.browserAction.setIcon({ path: "images/icon_enabled.png" });
-    console.log("start clicked");
-    sendMessage({message:"start"});
+    getCurrentTabUrl(function(url) {
+      isFound = false;
+      chrome.browserAction.setIcon({ path: "images/icon_enabled.png" });
+      console.log("start clicked");
+      sendMessage({message:"start"});
+    });
   });
 
   stopButton.addEventListener("click", function (e) {
@@ -131,6 +146,31 @@ chrome.runtime.onMessage.addListener(
     if (request.find === true) {
       chrome.browserAction.setIcon({ path: "images/icon_found.png" });
       renderStatus("button found", request.code);
+      isFound = true;
+    }
+
+    if (!isFound) {
+      if (request.code === 3) {
+        chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
+          //use settings from plugin
+          if (currentCount<10) {
+            currentCount++;
+            addToMessagesList("reloading page ...");
+            var code = 'window.location.reload();';
+            chrome.tabs.executeScript(arrayOfTabs[0].id, {code: code});
+          }
+
+        });
+      }
+
+      if (request.code === 4) {
+        //chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
+          //use settings from plugin
+          if (currentCount<10) {
+            sendMessage({message:"start"});
+          }
+        //});
+      }
     }
 });
 

@@ -1,4 +1,5 @@
-console.log("backgroudn started");
+var currentTab = "";
+var tabId = 0;
 
 // Called when the user clicks on the browser action.
 chrome.browserAction.onClicked.addListener(function(tab) {
@@ -7,6 +8,29 @@ chrome.browserAction.onClicked.addListener(function(tab) {
   chrome.tabs.executeScript({
     code: 'document.body.style.backgroundColor="red"'
   });
+});
+
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+	/*console.log("changeInfo", changeInfo);
+	console.log("tabId", tabId);
+	console.log("tab", tab);
+	if ((changeInfo.url!==null) && (changeInfo!==undefined)) {
+		if (currentTab!==changeInfo.url) {
+			chrome.browserAction.setIcon({ path: "icon.png" });
+		}
+	}*/
+});
+
+chrome.tabs.onActivated.addListener(function(tabId, changeInfo, tab) {
+	console.log("changeInfo2", changeInfo);
+	console.log("tabId2", tabId);
+	console.log("tab2", tab);
+
+	if ((tabId.tabId!==null) && (tabId.tabId!==undefined)) {
+		if (tabId!==tabId.tabId) {
+			chrome.browserAction.setIcon({ path: "icon.png" });
+		}
+	}
 });
 
 var ports = [];
@@ -29,3 +53,15 @@ function notifyDevtools(msg) {
         port.postMessage(msg);
     });
 }
+
+//long live cinnection to popup page
+chrome.extension.onConnect.addListener(function(port) {
+	console.log("Connected .....");
+    port.onMessage.addListener(function(msg) {
+    	console.log("message recieved" + msg.currentTab);
+    	console.log("tab", msg.tab);
+    	currentTab = msg.currentTab;
+    	tabId = msg.tab.id;
+    	//port.postMessage("Hi Popup.js");
+    });
+});
