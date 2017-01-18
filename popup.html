@@ -47,11 +47,13 @@
       <div class="row">
         <div class="col-md-12">
           <p>Page - <span id="page"></span></p>
+          <p>buttonWaitTimeout:<span id="buttonWaitTimeout">0</span>&nbsp;cycleCount:<span id="cycleCount">0</span></p>
         </div>
         <div class="col-md-12">
-          <p>Status:<br/>
+          <p>Status: <span id="status"></span><br/>
           Button code - <span id="status_code"></span><br/>
-          Button - <span id="status_button"></span>
+          Button - <span id="status_button"></span><br/>
+          Current step - <span id="status_current_step"></span>
           </p>
         </div>
       </div>
@@ -62,14 +64,17 @@
       </div>
       <div class="row">
         <div class="col-md-3 col-xs-3">
-          <button id="start">Start</button>
+          <button id="start">Start cycle</button>
+        </div>
+        <div class="col-md-3 col-xs-3">
+          <button id="startOnce">Start once</button>
         </div>
         <div class="col-md-3 col-xs-3">
           <button id="stop">Stop</button>
         </div>
-        <div class="col-md-3 col-xs-3">
+        <!--<div class="col-md-3 col-xs-3">
           <button id="pause">Pause</button>
-        </div>  
+        </div>-->  
         <div class="col-md-3 col-xs-3">
           <button id="clear">Clear</button>
         </div>     

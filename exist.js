@@ -13,7 +13,9 @@ chrome.runtime.onMessage.addListener(
                 "from a content script:" + sender.tab.url :
                 "from the extension");
     console.log("request",request);
-    if (request.message.message == "start") {   
+    if (request.message.message === "start") {   
+        console.log("starting checkButtonExistOnPage");
+        console.log("isStarted",isStarted);
         checkButtonExistOnPage();
     }
 });

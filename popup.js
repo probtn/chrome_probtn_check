@@ -1,13 +1,17 @@
 var startButton = document.getElementById("start");
+var startOnceButton = document.getElementById("startOnce");
 var stopButton = document.getElementById("stop");
 var messageContainer = document.getElementById("messages");
 var status_code = document.getElementById("status_code");
 var status_button = document.getElementById("status_button");
 var clearButton = document.getElementById("clear");
+var status_current_step = document.getElementById("status_current_step");
 
+var buttonWaitTimeout = 7000;
+var cycleCount = 7;
 var isFound = false;
-
 var currentCount = 0;
+
 
 var port = chrome.extension.connect({
       name: "Background Communication"
@@ -67,7 +71,7 @@ function renderPage(pageText) {
   document.getElementById('page').textContent = pageText;
 }
 
-function renderStatus(statusText, code) {
+function renderStatusCode(statusText, code) {
   status_code = document.getElementById("status_code");
   status_button = document.getElementById("status_button");
 
@@ -79,40 +83,96 @@ function renderStatus(statusText, code) {
   }  
 }
 
+function renderCurrentStep(step) {
+  status_current_step = document.getElementById("status_current_step");
+  status_current_step.textContent = step;
+}
+
+function renderStatus(message) {
+  var status = document.getElementById("status");
+  status.textContent = message;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   chrome.browserAction.setIcon({ path: "icon.png" });
   startButton = document.getElementById("start");
   stopButton = document.getElementById("stop");
+  startOnceButton = document.getElementById("startOnce");
   messageContainer = document.getElementById("messages");
   status_code = document.getElementById("status_code");
   status_button = document.getElementById("status_button");
   clearButton = document.getElementById("clear");
+  status_current_step = document.getElementById("status_current_step");
 
   getCurrentTabUrl(function(url) {
     renderPage(url);
   });
 
-  startButton.addEventListener("click", function (e) {
-    getCurrentTabUrl(function(url) {
+  chrome.storage.sync.get(null, function(items) {
+    console.log("items", items);
+    if ((items.buttonWaitTimeout!==undefined) && (items.buttonWaitTimeout!==null) 
+      && (items.cycleCount!==undefined) && (items.cycleCount!==null)) {
+      buttonWaitTimeout = items.buttonWaitTimeout;
+      cycleCount = items.cycleCount;
+    } else {
+    }  
+
+    document.getElementById('buttonWaitTimeout').textContent = buttonWaitTimeout;
+    document.getElementById('cycleCount').textContent = cycleCount;
+
+    startButton.addEventListener("click", function (e) {
+      getCurrentTabUrl(function(url) {
+        isFound = false;
+        chrome.browserAction.setIcon({ path: "images/icon_enabled.png" });
+        console.log("start clicked");
+
+        messageContainer.innerHTML = '';
+        status_code.innerHTML = '';
+        status_button.innerHTML = '';
+
+        renderStatus("started...");
+        renderCurrentStep(currentCount);
+        sendMessage({message:"start"});
+      });
+    });
+
+    startOnceButton.addEventListener("click", function (e) {
+      messageContainer.innerHTML = '';
+      status_code.innerHTML = '';
+      status_button.innerHTML = '';
+
+      cycleCount = 0;
       isFound = false;
-      chrome.browserAction.setIcon({ path: "images/icon_enabled.png" });
-      console.log("start clicked");
+
+      console.log("startOnce clicked");
+      renderCurrentStep(currentCount);
       sendMessage({message:"start"});
     });
-  });
 
-  stopButton.addEventListener("click", function (e) {
-    chrome.browserAction.setIcon({ path: "icon.png" });
-    console.log("stop clicked");
-    sendMessage({message:"stop"});
-  });
+    stopButton.addEventListener("click", function (e) {
+      chrome.browserAction.setIcon({ path: "icon.png" });
+      console.log("stop clicked");
+      renderStatus("stoped");
 
-  clearButton.addEventListener("click", function (e) {
-    messageContainer.innerHTML = '';
-    status_code.innerHTML = '';
-    status_button.innerHTML = '';
-    console.log("clear clicked");
-    sendMessage({message:"stop"});
+      cycleCount = cycleCount;
+      isFound = true;
+
+      sendMessage({message:"stop"});
+    });
+
+    clearButton.addEventListener("click", function (e) {
+      messageContainer.innerHTML = '';
+      status_code.innerHTML = '';
+      status_button.innerHTML = '';
+      currentCount = 0;
+      isFound = false;
+
+      renderCurrentStep(currentCount);
+      console.log("clear clicked");
+      sendMessage({message:"stop"});
+    });
+
+
   });
 });
 
@@ -145,16 +205,19 @@ chrome.runtime.onMessage.addListener(
     //if buttno find at current page
     if (request.find === true) {
       chrome.browserAction.setIcon({ path: "images/icon_found.png" });
-      renderStatus("button found", request.code);
+      renderStatusCode("button found", request.code);
       isFound = true;
+
+      renderStatus("found");
     }
 
     if (!isFound) {
       if (request.code === 3) {
         chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
           //use settings from plugin
-          if (currentCount<10) {
+          if (currentCount<cycleCount) {
             currentCount++;
+            renderCurrentStep(currentCount);
             addToMessagesList("reloading page ...");
             var code = 'window.location.reload();';
             chrome.tabs.executeScript(arrayOfTabs[0].id, {code: code});
@@ -166,7 +229,7 @@ chrome.runtime.onMessage.addListener(
       if (request.code === 4) {
         //chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
           //use settings from plugin
-          if (currentCount<10) {
+          if (currentCount<cycleCount) {
             sendMessage({message:"start"});
           }
         //});
