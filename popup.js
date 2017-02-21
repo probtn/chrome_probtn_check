@@ -2,10 +2,14 @@ var startButton = document.getElementById("start");
 var startOnceButton = document.getElementById("startOnce");
 var stopButton = document.getElementById("stop");
 var messageContainer = document.getElementById("messages");
-var status_code = document.getElementById("status_code");
-var status_button = document.getElementById("status_button");
+var status_code = document.getElementById("status_code_block");
+var status_button = document.getElementById("status_button_block");
 var clearButton = document.getElementById("clear");
 var status_current_step = document.getElementById("status_current_step");
+var status_current_time = document.getElementById("status_current_time");
+
+var currentTimer = null;
+var currentTimerValue = 0;
 
 var buttonWaitTimeout = 7000;
 var cycleCount = 7;
@@ -72,14 +76,16 @@ function renderPage(pageText) {
 }
 
 function renderStatusCode(statusText, code) {
-  status_code = document.getElementById("status_code");
-  status_button = document.getElementById("status_button");
+  status_code = document.getElementById("status_code_block");
+  status_button = document.getElementById("status_button_block");
 
   if (code===1) {
-    status_code.textContent = statusText;
+    //status_code.textContent = statusText;
+    status_code.className += " show";
   }
   if (code===2) {
-    status_button.textContent = statusText;
+    //status_button.textContent = statusText;
+    status_button.className += " show";
   }  
 }
 
@@ -88,19 +94,64 @@ function renderCurrentStep(step) {
   status_current_step.textContent = step;
 }
 
+function renderCurrentTime(time) {
+  status_current_time = document.getElementById("status_current_time");
+
+  var msToString = function(time) {
+    var currentdate = new Date(time);
+    var minutes = currentdate.getMinutes();
+    if (minutes<10) {
+      minutes = "0"+minutes;
+    }
+    var seconds = currentdate.getSeconds();
+    if (seconds<10) {
+      seconds = "0"+seconds;
+    }
+    var datetime = minutes + ":" + seconds + ":" + currentdate.getMilliseconds();
+    return datetime;
+  }
+
+  status_current_time.textContent = msToString(time);
+}
+
 function renderStatus(message) {
-  var status = document.getElementById("status");
-  status.textContent = message;
+  /*var status = document.getElementById("status");
+  status.textContent = message;*/
+}
+
+function startTimer() {
+  currentTimerValue = 0;
+  renderCurrentTime(currentTimerValue);
+  currentTimer = setInterval(function() {
+    currentTimerValue = currentTimerValue + 5;
+    renderCurrentTime(currentTimerValue);
+  }, 5);
+}
+
+function restartTimer() {
+  stopTimer(function() {
+    startTimer();
+  });
+}
+
+function stopTimer(callback) {
+  if ((currentTimer!==null) && (currentTimer!==undefined)) {
+    clearInterval(currentTimer);
+    if ((callback!==null) && (callback!==undefined)) {
+      callback();
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
   chrome.browserAction.setIcon({ path: "icon.png" });
   startButton = document.getElementById("start");
   stopButton = document.getElementById("stop");
+  console.log("stopButton", stopButton);
   startOnceButton = document.getElementById("startOnce");
   messageContainer = document.getElementById("messages");
-  status_code = document.getElementById("status_code");
-  status_button = document.getElementById("status_button");
+  status_code = document.getElementById("status_code_block");
+  status_button = document.getElementById("status_button_block");
   clearButton = document.getElementById("clear");
   status_current_step = document.getElementById("status_current_step");
 
@@ -127,16 +178,21 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("start clicked");
 
         messageContainer.innerHTML = '';
-        status_code.innerHTML = '';
-        status_button.innerHTML = '';
+        //status_code.innerHTML = '';
+        //status_button.innerHTML = '';
+        status_code.classList.remove("show");
+        status_button.classList.remove("show");
 
         renderStatus("started...");
         renderCurrentStep(currentCount);
+
+        startTimer();
+
         sendMessage({message:"start"});
       });
     });
 
-    startOnceButton.addEventListener("click", function (e) {
+    /*startOnceButton.addEventListener("click", function (e) {
       messageContainer.innerHTML = '';
       status_code.innerHTML = '';
       status_button.innerHTML = '';
@@ -146,8 +202,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
       console.log("startOnce clicked");
       renderCurrentStep(currentCount);
+
+      startTimer();
+
       sendMessage({message:"start"});
-    });
+    });*/
 
     stopButton.addEventListener("click", function (e) {
       chrome.browserAction.setIcon({ path: "icon.png" });
@@ -156,6 +215,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
       cycleCount = cycleCount;
       isFound = true;
+
+      stopTimer();
 
       sendMessage({message:"stop"});
     });
@@ -168,7 +229,9 @@ document.addEventListener('DOMContentLoaded', function() {
       isFound = false;
 
       renderCurrentStep(currentCount);
+      renderCurrentTime(0);
       console.log("clear clicked");
+
       sendMessage({message:"stop"});
     });
 
@@ -176,14 +239,26 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+var dateTimeToString = function(currentdate) {
+  var minutes = currentdate.getMinutes();
+  if (minutes<10) {
+    minutes = "0"+minutes;
+  }
+  var seconds = currentdate.getSeconds();
+  if (seconds<10) {
+    seconds = "0"+seconds;
+  }
+  var datetime = currentdate.getHours() + ":" + minutes + ":" + seconds;
+  return datetime;
+}
+
 var addToMessagesList = function(message) {
   var item = document.createElement('p');
 
   var currentdate = new Date();
-  var datetime = currentdate.getHours() + ":" 
-  + currentdate.getMinutes() + ":" + currentdate.getSeconds();
+  var datetime = dateTimeToString(currentdate);
 
-  item.innerHTML = "<span><i>"+datetime+"</i></span> " +message;
+  item.innerHTML = "<span class='message_time'>"+datetime+"</span> <span class='message_text'>" +message+"</span>";
   if ((messageContainer===null) || (messageContainer===undefined)) {
     document.getElementById("messages");
   }
@@ -209,6 +284,8 @@ chrome.runtime.onMessage.addListener(
       isFound = true;
 
       renderStatus("found");
+
+      stopTimer();
     }
 
     if (!isFound) {
@@ -216,11 +293,14 @@ chrome.runtime.onMessage.addListener(
         chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
           //use settings from plugin
           if (currentCount<cycleCount) {
+            stopTimer();
             currentCount++;
             renderCurrentStep(currentCount);
             addToMessagesList("reloading page ...");
             var code = 'window.location.reload();';
             chrome.tabs.executeScript(arrayOfTabs[0].id, {code: code});
+          } else {
+            stopTimer();
           }
 
         });
@@ -230,7 +310,10 @@ chrome.runtime.onMessage.addListener(
         //chrome.tabs.query({active: true, currentWindow: true}, function (arrayOfTabs) {
           //use settings from plugin
           if (currentCount<cycleCount) {
+            restartTimer();
             sendMessage({message:"start"});
+          } else {
+            stopTimer();
           }
         //});
       }

@@ -6,6 +6,7 @@ var sendMessage = function(message, find, code) {
 }
 
 var isStarted = false;
+var isFinished = false;
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
@@ -14,6 +15,10 @@ chrome.runtime.onMessage.addListener(
                 "from the extension");
     console.log("request",request);
     if (request.message.message === "start") {   
+        if (isFinished === true) {
+            isStarted = false;
+            isFinished = false;
+        }
         console.log("starting checkButtonExistOnPage");
         console.log("isStarted",isStarted);
         checkButtonExistOnPage();
@@ -71,7 +76,7 @@ var checkButtonExistOnPage = function() {
                 } else {
                     sendMessage("#probtn_button not found", false, 3);
                 };
-
+                isFinished = true;
             }, 7000);
         }
     }

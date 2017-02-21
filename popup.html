@@ -25,14 +25,81 @@
         max-width: 400px;
       }
       #messages {
-        overflow: scroll;
-        width:390px;
+        /*overflow: scroll;*/
+        width: auto;
         height: 300px;
+        overflow-y: scroll;
+        font-size: 13px;
       }
 
       #status_code, #status_button {
         font-weight: bold;
       }
+      #start {
+        background: url('images/btn-find.png');
+        background-size: cover;
+        width: 251px;
+        height: 40px;
+        border: 0px;
+        margin: 10px;
+        margin-left: 0px;
+      }
+
+      #stop {
+        background: url('images/btn-stop.png');
+        background-size: cover;
+        width: 40px;
+        height: 40px;
+        border: 0px;
+        margin: 10px;
+        margin-left: 0px;
+      }
+
+      #pause {
+        background: url('images/btn-pause.png');
+        background-size: cover;
+        width: 40px;
+        height: 40px;
+        border: 0px;
+        margin: 10px;
+        margin-left: 0px;
+      }
+      h4 {
+        margin-bottom: 0px;
+        color: #BABBBA; 
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 16px;
+        margin-top: 0px;
+      }
+      #clear {
+        color: #3A75DB;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .message_text {
+        font-weight: bold;
+      }
+      .message_time {
+        color: #BABBBA; 
+      }
+      #status_code_block, #status_button_block {
+        display: none;
+      }
+      #status_code_block.show, #status_button_block.show {
+        display: inline-block;
+      }
+      .status_text, #status_code_block, #status_button_block {
+        font-size: 15px;
+        font-weight: bold;
+        line-height: 15px;
+        padding-top: 10px;
+      }
+      #step, #curren_time {
+        color: #BABBBA;
+        font-size: 12px;
+      }
+      
     </style>
     <!--
       - JavaScript and HTML must be in separate files: see our Content Security
@@ -44,40 +111,86 @@
   </head>
   <body>
     <div class="container">
-      <div class="row">
-        <div class="col-md-12">
-          <p>Page - <span id="page"></span></p>
-          <p>buttonWaitTimeout:<span id="buttonWaitTimeout">0</span>&nbsp;cycleCount:<span id="cycleCount">0</span></p>
+      <div class="row">        
+          <div class="col-md-12 col-xs-12">
+            <button id="start">&nbsp;</button> <!--Start cycle-->
+            <button id="pause">&nbsp;</button> <!--pause-->
+            <button id="stop">&nbsp;</button> <!--stop-->
+          </div>
+          <!--<div class="col-md-3 col-xs-3">
+            <button id="startOnce">Start once</button>
+          </div>-->
+          <!--<div class="col-md-2 col-xs-2">
+            <button id="clear">Clear</button>
+          </div>-->     
         </div>
-        <div class="col-md-12">
-          <p>Status: <span id="status"></span><br/>
-          Button code - <span id="status_code"></span><br/>
-          Button - <span id="status_button"></span><br/>
-          Current step - <span id="status_current_step"></span>
-          </p>
+        <div class="row">
+          <div class="col-md-3 col-xs-3">
+            <h4 style="">Status</h4>  
+          </div>
+          <div class="col-md-2 col-xs-2">
+          </div>
+          <div class="col-md-3 col-xs-3">
+            <span id="step">Step: <span id="status_current_step">0</span>/<span id="cycleCount">0</span></span>
+          </div>
+          <div class="col-md-4 col-xs-4">
+            <span id="curren_time">Time: <span id="status_current_time">00:00:00</span></span>
+          </div>
         </div>
-      </div>
+        <div class="row">
+          <div class="col-md-12 col-xs-12">                   
+            <hr style="margin-top: 0px;"/>   
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12 col-xs-12">   
+            <p style="display: none;">Page - <span id="page"></span>
+            <span id="buttonWaitTimeout">0</span></p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-5 col-xs-5">   
+            <div class="status_text">Button code:</div> 
+          </div>
+          <div class="col-md-3 col-xs-3">   
+          </div>
+          <div class="col-md-4 col-xs-4"> 
+            <div id="status_code_block"> 
+              <img src="images/icon-found.png"/> Found <span id="status_code"></span> 
+            </div>
+          </div>
+        </div>
+        <div class="row" style="margin-bottom: 20px;">
+          <div class="col-md-5 col-xs-5">   
+            <div class="status_text">Button:</div> 
+          </div>
+          <div class="col-md-3 col-xs-3">   
+          </div>
+          <div class="col-md-4 col-xs-4">   
+            <div id="status_button_block">
+              <img src="images/icon-found.png"/> Found <span id="status_button"></span> 
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-3 col-xs-3">
+            <h4 style="">Log</h4>  
+          </div>
+          <div class="col-md-6 col-xs-6">
+          </div>
+          <div class="col-md-3 col-xs-3">
+            <span id="clear">Clear</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12 col-xs-12">                   
+            <hr style="margin-top: 0px;"/>   
+          </div>
+        </div>
       <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-12 col-xs-12">
           <div id="messages"></div>
         </div>
-      </div>
-      <div class="row">
-        <div class="col-md-3 col-xs-3">
-          <button id="start">Start cycle</button>
-        </div>
-        <div class="col-md-3 col-xs-3">
-          <button id="startOnce">Start once</button>
-        </div>
-        <div class="col-md-3 col-xs-3">
-          <button id="stop">Stop</button>
-        </div>
-        <!--<div class="col-md-3 col-xs-3">
-          <button id="pause">Pause</button>
-        </div>-->  
-        <div class="col-md-3 col-xs-3">
-          <button id="clear">Clear</button>
-        </div>     
       </div>
     </div>
   </body>
