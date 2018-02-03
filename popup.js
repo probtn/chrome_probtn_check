@@ -1,13 +1,13 @@
-var startButton = document.getElementById("start");
-var startOnceButton = document.getElementById("startOnce");
-var stopButton = document.getElementById("stop");
-var messageContainer = document.getElementById("messages");
-var status_code = document.getElementById("status_code_block");
-var status_button = document.getElementById("status_button_block");
-var clearButton = document.getElementById("clear");
-var status_current_step = document.getElementById("status_current_step");
-var status_current_time = document.getElementById("status_current_time");
-
+﻿var startButton = null;
+var startOnceButton = null;
+var stopButton = null;
+var messageContainer = null;
+var status_code = null;
+var status_button = null;
+var clearButton = null;
+var status_current_step = null;
+var status_current_time = null;
+var switchCheckbox = null;
 var currentTimer = null;
 var currentTimerValue = 0;
 
@@ -15,14 +15,6 @@ var buttonWaitTimeout = 7000;
 var cycleCount = 7;
 var isFound = false;
 var currentCount = 0;
-
-
-var port = chrome.extension.connect({
-      name: "Background Communication"
-});
-port.onMessage.addListener(function(msg) {
-      console.log("message recieved", msg);
-});
 
 /**
  * Get the current URL.
@@ -56,7 +48,7 @@ function getCurrentTabUrl(callback) {
     // "url" properties.
     console.assert(typeof url == 'string', 'tab.url should be a string');
 
-    port.postMessage({currentTab: url, tab: tab});
+  //  port.postMessage({currentTab: url, tab: tab});
 
     callback(url);
   });
@@ -76,9 +68,6 @@ function renderPage(pageText) {
 }
 
 function renderStatusCode(statusText, code) {
-  status_code = document.getElementById("status_code_block");
-  status_button = document.getElementById("status_button_block");
-
   if (code===1) {
     //status_code.textContent = statusText;
     status_code.className += " show";
@@ -86,7 +75,7 @@ function renderStatusCode(statusText, code) {
   if (code===2) {
     //status_button.textContent = statusText;
     status_button.className += " show";
-  }  
+  }
 }
 
 function renderCurrentStep(step) {
@@ -154,6 +143,8 @@ document.addEventListener('DOMContentLoaded', function() {
   status_button = document.getElementById("status_button_block");
   clearButton = document.getElementById("clear");
   status_current_step = document.getElementById("status_current_step");
+  switchCheckbox = document.getElementById("switch");
+
 
   getCurrentTabUrl(function(url) {
     renderPage(url);
@@ -161,12 +152,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   chrome.storage.sync.get(null, function(items) {
     console.log("items", items);
-    if ((items.buttonWaitTimeout!==undefined) && (items.buttonWaitTimeout!==null) 
+    if ((items.buttonWaitTimeout!==undefined) && (items.buttonWaitTimeout!==null)
       && (items.cycleCount!==undefined) && (items.cycleCount!==null)) {
       buttonWaitTimeout = items.buttonWaitTimeout;
       cycleCount = items.cycleCount;
     } else {
-    }  
+    }
 
     document.getElementById('buttonWaitTimeout').textContent = buttonWaitTimeout;
     document.getElementById('cycleCount').textContent = cycleCount;
@@ -191,22 +182,6 @@ document.addEventListener('DOMContentLoaded', function() {
         sendMessage({message:"start"});
       });
     });
-
-    /*startOnceButton.addEventListener("click", function (e) {
-      messageContainer.innerHTML = '';
-      status_code.innerHTML = '';
-      status_button.innerHTML = '';
-
-      cycleCount = 0;
-      isFound = false;
-
-      console.log("startOnce clicked");
-      renderCurrentStep(currentCount);
-
-      startTimer();
-
-      sendMessage({message:"start"});
-    });*/
 
     stopButton.addEventListener("click", function (e) {
       chrome.browserAction.setIcon({ path: "icon.png" });
@@ -235,8 +210,17 @@ document.addEventListener('DOMContentLoaded', function() {
       sendMessage({message:"stop"});
     });
 
+    switchCheckbox.addEventListener("change", function (e) {
+      chrome.storage.sync.set({"auto": true}, function(){});
+    });
 
-  });
+    chrome.storage.sync.get("auto", function(startMode) {
+      if ((startMode.auto !== null) && (startMode.auto !== undefined) && (startMode.auto !== ""))
+      {
+        switchCheckbox.checked = startMode.auto;
+      }
+    });
+});
 });
 
 var dateTimeToString = function(currentdate) {
@@ -266,7 +250,7 @@ var addToMessagesList = function(message) {
     messageContainer.appendChild(item);
   } catch(ex) {
     console.log(ex);
-  }  
+  }
 }
 
 chrome.runtime.onMessage.addListener(
@@ -329,4 +313,3 @@ var sendMessage = function(message) {
     });
   });
 }
-

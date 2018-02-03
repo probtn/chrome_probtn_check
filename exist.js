@@ -14,7 +14,7 @@ chrome.runtime.onMessage.addListener(
                 "from a content script:" + sender.tab.url :
                 "from the extension");
     console.log("request",request);
-    if (request.message.message === "start") {   
+    if (request.message.message === "start") {
         if (isFinished === true) {
             isStarted = false;
             isFinished = false;
@@ -38,7 +38,7 @@ sendMessage("exist.js ready", false, 4);
 
 var checkButtonExistOnPage = function() {
     if (isStarted === false) {
-        isStarted = true; 
+        isStarted = true;
 
         console.log("exist.js started");
 
@@ -82,3 +82,9 @@ var checkButtonExistOnPage = function() {
     }
 }
 
+chrome.storage.sync.get("auto", function(startMode) {
+  if (startMode.auto === true)
+  {
+    checkButtonExistOnPage();
+  }
+});
