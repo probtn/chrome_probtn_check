@@ -198,8 +198,8 @@ document.addEventListener('DOMContentLoaded', function() {
         messageContainer.innerHTML = '';
         //status_code.innerHTML = '';
         //status_button.innerHTML = '';
-        status_code.classList.remove("show");
-        status_button.classList.remove("show");
+        //status_code.classList.remove("show");
+        //status_button.classList.remove("show");
 
         renderStatus("started...");
         renderCurrentStep(currentCount);
@@ -224,8 +224,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     clearButton.addEventListener("click", function (e) {
       messageContainer.innerHTML = '';
-      status_code.innerHTML = '';
-      status_button.innerHTML = '';
+      status_code.classList.remove("show");
+      status_button.classList.remove("show");
       currentCount = 0;
       isFound = false;
 
