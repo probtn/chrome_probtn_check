@@ -136,7 +136,6 @@ document.addEventListener('DOMContentLoaded', function() {
   chrome.browserAction.setIcon({ path: "icon.png" });
   startButton = document.getElementById("start");
   stopButton = document.getElementById("stop");
-  console.log("stopButton", stopButton);
   startOnceButton = document.getElementById("startOnce");
   messageContainer = document.getElementById("messages");
   status_code = document.getElementById("status_code_block");
@@ -145,12 +144,40 @@ document.addEventListener('DOMContentLoaded', function() {
   status_current_step = document.getElementById("status_current_step");
   switchCheckbox = document.getElementById("switch");
 
+  sendMessage({message:"popup_open"});
 
   getCurrentTabUrl(function(url) {
     renderPage(url);
   });
 
-  chrome.storage.sync.get(null, function(items) {
+  function processDataFromExist(name)
+  {
+    chrome.storage.local.get(name, function(dataSet) {
+        if ((dataSet[name] !== null) && (dataSet[name] !== undefined) && (dataSet[name] !== ""))
+        {
+          var data = dataSet[name];
+          if ((data.message !== null) && (data.message !== undefined) &&
+            (data.find !== null) && (data.find !== undefined) &&
+          (data.code !== null) && (data.code !== undefined))
+          {
+            addToMessagesList(data.message);
+            buttonFounded(data);
+          }
+          // can't set to storage by variable as key
+          if (name === "button_code")
+          {
+            chrome.storage.local.set({"button_code": null}, function(){});
+          }
+
+          if (name === "button")
+          {
+            chrome.storage.local.set({"button": null}, function(){});
+          }
+        }
+    });
+  }
+
+  chrome.storage.local.get(null, function(items) {
     console.log("items", items);
     if ((items.buttonWaitTimeout!==undefined) && (items.buttonWaitTimeout!==null)
       && (items.cycleCount!==undefined) && (items.cycleCount!==null)) {
@@ -185,7 +212,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     stopButton.addEventListener("click", function (e) {
       chrome.browserAction.setIcon({ path: "icon.png" });
-      console.log("stop clicked");
       renderStatus("stoped");
 
       cycleCount = cycleCount;
@@ -211,13 +237,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     switchCheckbox.addEventListener("change", function (e) {
-      chrome.storage.sync.set({"auto": true}, function(){});
+      chrome.storage.local.set({"auto": switchCheckbox.checked}, function(){});
     });
 
-    chrome.storage.sync.get("auto", function(startMode) {
+    chrome.storage.local.get("auto", function(startMode) {
       if ((startMode.auto !== null) && (startMode.auto !== undefined) && (startMode.auto !== ""))
       {
         switchCheckbox.checked = startMode.auto;
+        processDataFromExist("button_code");
+        processDataFromExist("button");
       }
     });
 });
@@ -253,6 +281,17 @@ var addToMessagesList = function(message) {
   }
 }
 
+function buttonFounded(data)
+{
+    chrome.browserAction.setIcon({ path: "images/icon_found.png" });
+    renderStatusCode("button found", data.code);
+    isFound = true;
+
+    renderStatus("found");
+
+    stopTimer();
+}
+
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     console.log(sender.tab ?
@@ -263,13 +302,7 @@ chrome.runtime.onMessage.addListener(
 
     //if buttno find at current page
     if (request.find === true) {
-      chrome.browserAction.setIcon({ path: "images/icon_found.png" });
-      renderStatusCode("button found", request.code);
-      isFound = true;
-
-      renderStatus("found");
-
-      stopTimer();
+      buttonFounded(request);
     }
 
     if (!isFound) {

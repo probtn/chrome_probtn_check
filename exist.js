@@ -7,6 +7,7 @@ var sendMessage = function(message, find, code) {
 
 var isStarted = false;
 var isFinished = false;
+var isPopupOpen = false;
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
@@ -23,6 +24,16 @@ chrome.runtime.onMessage.addListener(
         console.log("isStarted",isStarted);
         checkButtonExistOnPage();
     }
+
+      if (request.message.message === "stop")
+      {
+        isFinished = true;
+      }
+
+     if (request.message.message === "popup_open")
+     {
+       isPopupOpen = true;
+     }
 });
 
 function isMyScriptLoaded(url) {
@@ -34,6 +45,31 @@ function isMyScriptLoaded(url) {
     return false;
 }
 
+function sendDataToPopup(message, isFound, code)
+{
+  if (isPopupOpen === true)
+  {
+    sendMessage(message, isFound, code);
+  }
+  else
+  {
+    var data = {
+      "message": message,
+      "find": isFound,
+      "code": code
+    };
+
+    var name = null;
+    if (code === 1)
+    {
+      chrome.storage.local.set({"button_code": data}, function(){console.log("button_code save");});
+    }
+    else {
+      chrome.storage.local.set({"button": data}, function(){console.log("button save");});
+    }
+  }
+}
+
 sendMessage("exist.js ready", false, 4);
 
 var checkButtonExistOnPage = function() {
@@ -41,50 +77,59 @@ var checkButtonExistOnPage = function() {
         isStarted = true;
 
         console.log("exist.js started");
+        var data = {
+          message: null,
+          find: null,
+          code: null
+        };
+
 
         if (isMyScriptLoaded("https://cdn.probtn.com/probtn.js")) {
-            sendMessage("https://cdn.probtn.com/probtn.js loaded", true, 1);
+            sendDataToPopup("https://cdn.probtn.com/probtn.js loaded", true, 1);
         };
         if (isMyScriptLoaded("http://cdn.probtn.com/probtn.js")) {
-            sendMessage("http://cdn.probtn.com/probtn.js loaded", true, 1);
+            sendDataToPopup("http://cdn.probtn.com/probtn.js loaded", true, 1);
         };
         if (isMyScriptLoaded("https://cdn.probtn.com/includepb.min.js")) {
-            sendMessage("https://cdn.probtn.com/includepb.min.js loaded", true, 1);
+            sendDataToPopup("https://cdn.probtn.com/includepb.min.js loaded", true, 1);
         };
         if (isMyScriptLoaded("https://cdn.probtn.com/includepb.min.js")) {
-            sendMessage("https://cdn.probtn.com/includepb.min.js loaded", true, 1);
+            sendDataToPopup("https://cdn.probtn.com/includepb.min.js loaded", true, 1);
         };
         if (isMyScriptLoaded("https://cdn.probtn.com/probtn_full.js")) {
-            sendMessage("https://cdn.probtn.com/probtn_full.js loaded", true, 1);
+            sendDataToPopup("https://cdn.probtn.com/probtn_full.js loaded", true, 1);
         };
         if (isMyScriptLoaded("https://cdn.probtn.com/showinparent.js")) {
-            sendMessage("https://cdn.probtn.com/showinparent.js loaded", true, 1);
+            sendDataToPopup("https://cdn.probtn.com/showinparent.js loaded", true, 1);
         };
         if (isMyScriptLoaded("https://cdn.probtn.com/showinparent_concat.js")) {
-            sendMessage("https://cdn.probtn.com/showinparent_concat.js loaded", true, 1);
+            setData("https://cdn.probtn.com/showinparent_concat.js loaded", true, 1);
         };
         if (isMyScriptLoaded("https://cdn.probtn.com/probtn_concat.js")) {
-            sendMessage("https://cdn.probtn.com/probtn_concat.js loaded", true, 1);
+            sendDataToPopup("https://cdn.probtn.com/probtn_concat.js loaded", true, 1);
         };
 
         if (document.getElementById('probtn_button') !== null && document.getElementById('probtn_button') !== undefined) {
-            sendMessage("#probtn_button exist at page after timeout", true, 2);
+            sendDataToPopup("#probtn_button exist at page after timeout", true, 2);
         } else {
             setTimeout(function () {
                 if (document.getElementById('probtn_button') !== null && document.getElementById('probtn_button') !== undefined) {
-                    sendMessage("#probtn_button exist at page after timeout", true, 2);
+                    sendDataToPopup("#probtn_button exist at page after timeout", true, 2);
                 } else {
-                    sendMessage("#probtn_button not found", false, 3);
+                    sendDataToPopup("#probtn_button not found", false, 3);
                 };
                 isFinished = true;
             }, 7000);
         }
+
+
     }
 }
 
-chrome.storage.sync.get("auto", function(startMode) {
+chrome.storage.local.get("auto", function(startMode) {
   if (startMode.auto === true)
   {
+    chrome.runtime.sendMessage({message: "setIconEnable"});
     checkButtonExistOnPage();
   }
 });

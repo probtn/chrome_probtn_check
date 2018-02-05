@@ -24,7 +24,7 @@ var saveOptions = function() {
 	/*console.log("buttonWaitTimeout", buttonWaitTimeout);
 	console.log("cycleCount", cycleCount);*/
 
-	chrome.storage.sync.set({
+	chrome.storage.local.set({
 		buttonWaitTimeout: buttonWaitTimeout,
 		cycleCount: cycleCount
 	}, function() {
@@ -43,15 +43,15 @@ function loadOptions() {
     buttonWaitTimeout: defaultButtonWaitTimeout,
     cycleCount: defaultCycleCount
   }*/
-  chrome.storage.sync.get(null, function(items) {
+  chrome.storage.local.get(null, function(items) {
   	console.log("items", items);
-  	if ((items.buttonWaitTimeout!==undefined) && (items.buttonWaitTimeout!==null) 
+  	if ((items.buttonWaitTimeout!==undefined) && (items.buttonWaitTimeout!==null)
   		&& (items.cycleCount!==undefined) && (items.cycleCount!==null)) {
   		document.getElementById('buttonWaitTimeout').value = items.buttonWaitTimeout;
   		document.getElementById('cycleCount').value = items.cycleCount;
   	} else {
   		restoreOptions();
-  	}   
+  	}
   });
 }
 
