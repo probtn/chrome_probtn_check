@@ -1,20 +1,23 @@
-﻿var startButton = null;
+var BUTTON_WAIT_TIMEOUT_DEFAULT = 7000;
+var CYCLE_COUNT_DEFAULT = 7;
+
+var startButton = null;
 var startOnceButton = null;
 var stopButton = null;
 var messageContainer = null;
 var status_code = null;
 var status_button = null;
 var clearButton = null;
+var saveButton = null;
 var status_current_step = null;
 var status_current_time = null;
 var switchCheckbox = null;
 var currentTimer = null;
 var currentTimerValue = 0;
-
-var buttonWaitTimeout = 7000;
-var cycleCount = 7;
 var isFound = false;
 var currentCount = 0;
+var buttonWaitTimeout = BUTTON_WAIT_TIMEOUT_DEFAULT;
+var cycleCount = CYCLE_COUNT_DEFAULT;
 
 /**
  * Get the current URL.
@@ -62,6 +65,30 @@ function getCurrentTabUrl(callback) {
   // });
   // alert(url); // Shows "undefined", because chrome.tabs.query is async.
 }
+//----------------------------------------Options-------------------------------
+var saveOptions = function() {
+	try {
+		buttonWaitTimeout = parseInt(document.getElementById('buttonWaitTimeoutOption').value);
+		cycleCount = parseInt(document.getElementById('cycleCountOption').value);
+	} catch(ex) {
+		buttonWaitTimeout = BUTTON_WAIT_TIMEOUT_DEFAULT;
+		cycleCount = CYCLE_COUNT_DEFAULT;
+	}
+
+	if (!Number.isInteger(buttonWaitTimeout)) buttonWaitTimeout = BUTTON_WAIT_TIMEOUT_DEFAULT;
+	if (!Number.isInteger(cycleCount)) cycleCount = CYCLE_COUNT_DEFAULT;
+
+  document.getElementById('buttonWaitTimeout').textContent = buttonWaitTimeout;
+  document.getElementById('cycleCount').textContent = cycleCount;
+
+  sendMessage({message:"save_options", bwt: buttonWaitTimeout});
+
+	chrome.storage.local.set({
+		buttonWaitTimeout: buttonWaitTimeout,
+		cycleCount: cycleCount
+	}, function() {	});
+}
+//------------------------------------------------------------------------------
 
 function renderPage(pageText) {
   document.getElementById('page').textContent = pageText;
@@ -143,7 +170,8 @@ document.addEventListener('DOMContentLoaded', function() {
   clearButton = document.getElementById("clear");
   status_current_step = document.getElementById("status_current_step");
   switchCheckbox = document.getElementById("switch");
-
+  saveButton = document.getElementById("save");
+  saveButton.addEventListener('click', saveOptions);
   sendMessage({message:"popup_open"});
 
   getCurrentTabUrl(function(url) {
@@ -188,6 +216,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('buttonWaitTimeout').textContent = buttonWaitTimeout;
     document.getElementById('cycleCount').textContent = cycleCount;
+    document.getElementById('buttonWaitTimeoutOption').value = buttonWaitTimeout;
+    document.getElementById('cycleCountOption').value = cycleCount;
 
     startButton.addEventListener("click", function (e) {
       getCurrentTabUrl(function(url) {
@@ -319,7 +349,6 @@ chrome.runtime.onMessage.addListener(
           } else {
             stopTimer();
           }
-
         });
       }
 
@@ -328,6 +357,7 @@ chrome.runtime.onMessage.addListener(
           //use settings from plugin
           if (currentCount<cycleCount) {
             restartTimer();
+            sendMessage({message:"popup_open"});
             sendMessage({message:"start"});
           } else {
             stopTimer();

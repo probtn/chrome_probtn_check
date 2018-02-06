@@ -8,6 +8,7 @@ var sendMessage = function(message, find, code) {
 var isStarted = false;
 var isFinished = false;
 var isPopupOpen = false;
+var buttonWaitTimeout = 7000;
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
@@ -34,6 +35,17 @@ chrome.runtime.onMessage.addListener(
      {
        isPopupOpen = true;
      }
+
+     if (request.message.message === "save_options")
+     {
+       console.log("save_options");
+       if ((request.message.bwt !== null) && (request.message.bwt !== undefined)
+     && (request.message.bwt > 0))
+      {
+        buttonWaitTimeout = request.message.bwt;
+        console.log("buttonWaitTimeout: " + buttonWaitTimeout);
+      }
+     }
 });
 
 function isMyScriptLoaded(url) {
@@ -49,6 +61,7 @@ function sendDataToPopup(message, isFound, code)
 {
   if (isPopupOpen === true)
   {
+    console.log(message);
     sendMessage(message, isFound, code);
   }
   else
@@ -119,17 +132,27 @@ var checkButtonExistOnPage = function() {
                     sendDataToPopup("#probtn_button not found", false, 3);
                 };
                 isFinished = true;
-            }, 7000);
+            }, buttonWaitTimeout);
         }
 
 
     }
 }
 
-chrome.storage.local.get("auto", function(startMode) {
-  if (startMode.auto === true)
+chrome.storage.local.get(null, function(items) {
+  console.log("items", items);
+  if ((items.buttonWaitTimeout !== undefined) && (items.buttonWaitTimeout !== null)
+   && (items.buttonWaitTimeout > 0))
   {
-    chrome.runtime.sendMessage({message: "setIconEnable"});
-    checkButtonExistOnPage();
+    buttonWaitTimeout = items.buttonWaitTimeout;
   }
+
+  chrome.storage.local.get("auto", function(startMode) {
+    if (startMode.auto === true)
+    {
+      chrome.runtime.sendMessage({message: "setIconEnable"});
+      checkButtonExistOnPage();
+    }
+  });
+
 });

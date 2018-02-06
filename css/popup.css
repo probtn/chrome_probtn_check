@@ -19,6 +19,7 @@ body {
   height: 300px;
   overflow-y: scroll;
   font-size: 100%;//13px;
+  border: 1px solid silver;
 }
 
 #status_code, #status_button {
@@ -73,7 +74,7 @@ h4 {
   color: #BABBBA;
 }
 #status_code_block, #status_button_block {
-  display: none;
+  //display: none;
 }
 #status_code_block.show, #status_button_block.show {
   display: inline-block;
@@ -127,4 +128,9 @@ h4 {
 
   .switch:checked:after {
 	left: calc(100% - 1.5em);
+}
+
+.btn-primary {
+	background-color: #0ebeff;
+	margin-left: 40%;
 }
