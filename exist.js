@@ -49,7 +49,7 @@ chrome.runtime.onMessage.addListener(
 });
 
 function isMyScriptLoaded(url) {
-    if (!url) url = "https://cdn.probtn.com/probtn.js";
+    if (!url) url = "https://cdn.viewst.com/probtn.js";
     var scripts = document.getElementsByTagName('script');
     for (var i = scripts.length; i--;) {
         if (scripts[i].src == url) return true;
@@ -97,29 +97,29 @@ var checkButtonExistOnPage = function() {
         };
 
 
-        if (isMyScriptLoaded("https://cdn.probtn.com/probtn.js")) {
-            sendDataToPopup("https://cdn.probtn.com/probtn.js loaded", true, 1);
+        if (isMyScriptLoaded("https://cdn.viewst.com/probtn.js")) {
+            sendDataToPopup("https://cdn.viewst.com/probtn.js loaded", true, 1);
         };
-        if (isMyScriptLoaded("http://cdn.probtn.com/probtn.js")) {
-            sendDataToPopup("http://cdn.probtn.com/probtn.js loaded", true, 1);
+        if (isMyScriptLoaded("http://cdn.viewst.com/probtn.js")) {
+            sendDataToPopup("http://cdn.viewst.com/probtn.js loaded", true, 1);
         };
-        if (isMyScriptLoaded("https://cdn.probtn.com/includepb.min.js")) {
-            sendDataToPopup("https://cdn.probtn.com/includepb.min.js loaded", true, 1);
+        if (isMyScriptLoaded("https://cdn.viewst.com/includepb.min.js")) {
+            sendDataToPopup("https://cdn.viewst.com/includepb.min.js loaded", true, 1);
         };
-        if (isMyScriptLoaded("https://cdn.probtn.com/includepb.min.js")) {
-            sendDataToPopup("https://cdn.probtn.com/includepb.min.js loaded", true, 1);
+        if (isMyScriptLoaded("https://cdn.viewst.com/includepb.min.js")) {
+            sendDataToPopup("https://cdn.viewst.com/includepb.min.js loaded", true, 1);
         };
-        if (isMyScriptLoaded("https://cdn.probtn.com/probtn_full.js")) {
-            sendDataToPopup("https://cdn.probtn.com/probtn_full.js loaded", true, 1);
+        if (isMyScriptLoaded("https://cdn.viewst.com/probtn_full.js")) {
+            sendDataToPopup("https://cdn.viewst.com/probtn_full.js loaded", true, 1);
         };
-        if (isMyScriptLoaded("https://cdn.probtn.com/showinparent.js")) {
-            sendDataToPopup("https://cdn.probtn.com/showinparent.js loaded", true, 1);
+        if (isMyScriptLoaded("https://cdn.viewst.com/showinparent.js")) {
+            sendDataToPopup("https://cdn.viewst.com/showinparent.js loaded", true, 1);
         };
-        if (isMyScriptLoaded("https://cdn.probtn.com/showinparent_concat.js")) {
-            setData("https://cdn.probtn.com/showinparent_concat.js loaded", true, 1);
+        if (isMyScriptLoaded("https://cdn.viewst.com/showinparent_concat.js")) {
+            setData("https://cdn.viewst.com/showinparent_concat.js loaded", true, 1);
         };
-        if (isMyScriptLoaded("https://cdn.probtn.com/probtn_concat.js")) {
-            sendDataToPopup("https://cdn.probtn.com/probtn_concat.js loaded", true, 1);
+        if (isMyScriptLoaded("https://cdn.viewst.com/probtn_concat.js")) {
+            sendDataToPopup("https://cdn.viewst.com/probtn_concat.js loaded", true, 1);
         };
 
         if (document.getElementById('probtn_button') !== null && document.getElementById('probtn_button') !== undefined) {
