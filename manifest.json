@@ -13,9 +13,6 @@
     "https://*/*",
     "storage"
   ],
-  "background": {
-    "scripts": ["background.js"]
-  },  
   "web_accessible_resources": ["css/*.css"],
   "content_scripts" : [{
         "js" : ["exist.js"],
