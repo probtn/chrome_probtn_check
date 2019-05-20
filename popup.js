@@ -1,4 +1,5 @@
 var startButton = document.getElementById("start");
+var pauseButton = document.getElementById("pause");
 var startOnceButton = document.getElementById("startOnce");
 var stopButton = document.getElementById("stop");
 var messageContainer = document.getElementById("messages");
@@ -15,6 +16,9 @@ var buttonWaitTimeout = 7000;
 var cycleCount = 7;
 var isFound = false;
 var currentCount = 0;
+
+var isPaused = false;
+var isStarted = false;
 
 
 var port = chrome.extension.connect({
@@ -123,10 +127,13 @@ function startTimer() {
   currentTimerValue = 0;
   renderCurrentTime(currentTimerValue);
   currentTimer = setInterval(function() {
-    currentTimerValue = currentTimerValue + 5;
-    renderCurrentTime(currentTimerValue);
+    if (!isPaused) {
+      currentTimerValue = currentTimerValue + 5;
+      renderCurrentTime(currentTimerValue);
+    }
   }, 5);
 }
+
 
 function restartTimer() {
   stopTimer(function() {
@@ -146,6 +153,7 @@ function stopTimer(callback) {
 document.addEventListener('DOMContentLoaded', function() {
   chrome.browserAction.setIcon({ path: "icon.png" });
   startButton = document.getElementById("start");
+  pauseButton = document.getElementById("pause");
   stopButton = document.getElementById("stop");
   console.log("stopButton", stopButton);
   startOnceButton = document.getElementById("startOnce");
@@ -174,6 +182,9 @@ document.addEventListener('DOMContentLoaded', function() {
     startButton.addEventListener("click", function (e) {
       getCurrentTabUrl(function(url) {
         isFound = false;
+        isStarted = true;
+        isPaused = false;
+
         chrome.browserAction.setIcon({ path: "images/icon_enabled.png" });
         console.log("start clicked");
 
@@ -188,7 +199,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
         startTimer();
 
-        sendMessage({message:"start"});
+        sendMessage({message:"start", time: buttonWaitTimeout});
+      });
+    });
+
+
+    pauseButton.addEventListener("click", function (e) {
+      getCurrentTabUrl(function(url) {
+        console.log("pause clicked");        
+
+        //if (!isPaused) {
+        sendMessage({message:"pause"});
+        //} else {
+        //  sendMessage({message:"continue"});
+        //}
       });
     });
 
@@ -213,6 +237,9 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log("stop clicked");
       renderStatus("stoped");
 
+      isPaused = false;
+      isStarted = false;
+
       cycleCount = cycleCount;
       isFound = true;
 
@@ -226,7 +253,12 @@ document.addEventListener('DOMContentLoaded', function() {
       status_code.innerHTML = '';
       status_button.innerHTML = '';
       currentCount = 0;
+
+      isPaused = false;
+
       isFound = false;
+
+
 
       renderCurrentStep(currentCount);
       renderCurrentTime(0);
@@ -286,6 +318,12 @@ chrome.runtime.onMessage.addListener(
       renderStatus("found");
 
       stopTimer();
+    }
+
+    if (request.code === 0) {
+
+      isPaused = !isPaused;
+      console.log("new isPaused", isPaused);
     }
 
     if (!isFound) {

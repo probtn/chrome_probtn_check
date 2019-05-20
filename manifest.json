@@ -3,7 +3,7 @@
 
   "name": "Probtn exist checker",
   "description": "This extension check is probtn exist at current page",
-  "version": "1.4",
+  "version": "1.4.1",
   "browser_action": {
     "default_icon": "icon.png",
     "default_popup": "popup.html"

@@ -7,6 +7,9 @@ var sendMessage = function(message, find, code) {
 
 var isStarted = false;
 var isFinished = false;
+var isPaused = false;
+
+var checkTime = 7000;
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
@@ -19,18 +22,41 @@ chrome.runtime.onMessage.addListener(
             isStarted = false;
             isFinished = false;
         }
-        console.log("starting checkButtonExistOnPage");
-        console.log("isStarted",isStarted);
+        if ((request.message.time!==undefined) && (request.message.time!==null)) {
+            checkTime = request.message.time;
+        }
         checkButtonExistOnPage();
+    }
+
+    if (request.message.message === "stop") {   
+        if (isFinished === true) {
+            isStarted = false;
+            isFinished = false;
+        }
+    }
+
+    if (request.message.message === "pause") {   
+        isPaused = !isPaused;
+        if (isPaused === false) {
+            sendMessage("paused", false, 0);
+        }
     }
 });
 
 function isMyScriptLoaded(url) {
     if (!url) url = "https://cdn.probtn.com/probtn.js";
+    url = url.replace(/.*?:\/\//g, "");
     var scripts = document.getElementsByTagName('script');
     for (var i = scripts.length; i--;) {
-        if (scripts[i].src == url) return true;
-    }
+        var src = scripts[i].src.replace(/.*?:\/\//g, ""); // remove protocol
+        if (src===scripts[i].src) {
+            src = scripts[i].src.replace(/\/\//g, ""); //remove //
+        }
+        if (src === url) {
+            console.log("src and url", src, url);
+            return true;    
+        } 
+    }    
     return false;
 }
 
@@ -67,17 +93,38 @@ var checkButtonExistOnPage = function() {
             sendMessage("https://cdn.probtn.com/probtn_concat.js loaded", true, 1);
         };
 
+        if (isMyScriptLoaded("https://demo.probtn.com/probtn.js")) {
+            sendMessage("https://demo.probtn.com/probtn.js loaded", true, 1);
+        };
+        if (isMyScriptLoaded("https://probtnlandings1.azurewebsites.net/probtn.js")) {
+            sendMessage("https://probtnlandings1.azurewebsites.net/probtn.js loaded", true, 1);
+        };
+
         if (document.getElementById('probtn_button') !== null && document.getElementById('probtn_button') !== undefined) {
             sendMessage("#probtn_button exist at page after timeout", true, 2);
         } else {
-            setTimeout(function () {
-                if (document.getElementById('probtn_button') !== null && document.getElementById('probtn_button') !== undefined) {
-                    sendMessage("#probtn_button exist at page after timeout", true, 2);
-                } else {
-                    sendMessage("#probtn_button not found", false, 3);
-                };
-                isFinished = true;
-            }, 7000);
+            if (!isPaused) {
+                setTimeout(function () {
+                    var checkInterval = setInterval(function() {
+                        if (!isPaused) {
+                            if (document.getElementById('probtn_button') !== null && document.getElementById('probtn_button') !== undefined) {
+                                sendMessage("#probtn_button exist at page after timeout", true, 2);
+                            } else {
+                                sendMessage("#probtn_button not found", false, 3);
+                            };
+                            isFinished = true;
+                            clearInterval(checkInterval);
+                        }
+                    }, 10);
+
+                    if (isPaused) {
+                        sendMessage("paused", false, 0);
+                    }
+                    
+                }, checkTime);
+            } else {
+                sendMessage("paused", false, 0);
+            }
         }
     }
 }
