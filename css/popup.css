@@ -1,0 +1,136 @@
+html, body {
+  width: 400px;
+  height: 400px;
+}
+body {
+  font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
+  font-size: 100%;
+}
+#status {
+  /* avoid an excessively wide status text */
+  white-space: pre;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 400px;
+}
+#messages {
+  /*overflow: scroll;*/
+  width: auto;
+  height: 300px;
+  overflow-y: scroll;
+  font-size: 100%;//13px;
+  border: 1px solid silver;
+}
+
+#status_code, #status_button {
+  font-weight: bold;
+}
+#start {
+  background: url('../images/btn-find.png');
+  background-size: cover;
+  width: 251px;
+  height: 40px;
+  border: 0px;
+  margin: 10px;
+  margin-left: 0px;
+}
+
+#stop {
+  background: url('../images/btn-stop.png');
+  background-size: cover;
+  width: 40px;
+  height: 40px;
+  border: 0px;
+  margin: 10px;
+  margin-left: 0px;
+}
+
+#pause {
+  background: url('../images/btn-pause.png');
+  background-size: cover;
+  width: 40px;
+  height: 40px;
+  border: 0px;
+  margin: 10px;
+  margin-left: 0px;
+}
+h4 {
+  margin-bottom: 0px;
+  color: #BABBBA;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 16px;
+  margin-top: 0px;
+}
+#clear {
+  color: #3A75DB;
+  font-size: 16px;
+  cursor: pointer;
+}
+.message_text {
+  font-weight: bold;
+}
+.message_time {
+  color: #BABBBA;
+}
+#status_code_block, #status_button_block {
+  display: none;
+}
+#status_code_block.show, #status_button_block.show {
+  display: inline-block;
+}
+.status_text, #status_code_block, #status_button_block {
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 15px;
+  padding-top: 10px;
+}
+#step, #curren_time {
+  color: #BABBBA;
+  font-size: 12px;
+}
+
+.switch {
+	font-size: 100%;
+	-webkit-appearance: none;
+	   -moz-appearance: none;
+	        appearance: none;
+	width: 3.5em;
+	height: 1.5em;
+	background: #ddd;
+	border-radius: 3em;
+	position: relative;
+	cursor: pointer;
+	outline: none;
+	-webkit-transition: all .2s ease-in-out;
+	transition: all .2s ease-in-out;
+}
+
+  .switch:checked {
+	background: #0ebeff;
+}
+
+  .switch:after {
+	position: absolute;
+	content: "";
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 50%;
+	background: #fff;
+	-webkit-box-shadow: 0 0 .25em rgba(0,0,0,.3);
+	        box-shadow: 0 0 .25em rgba(0,0,0,.3);
+	-webkit-transform: scale(.7);
+	        transform: scale(.7);
+	left: 0;
+	-webkit-transition: all .2s ease-in-out;
+	transition: all .2s ease-in-out;
+}
+
+  .switch:checked:after {
+	left: calc(100% - 1.5em);
+}
+
+.btn-primary {
+	background-color: #0ebeff;
+	margin-left: 40%;
+}
